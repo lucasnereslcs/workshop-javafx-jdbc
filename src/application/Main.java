@@ -13,13 +13,13 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainView.fxml"));
-			
+
 			ScrollPane scrollPane = loader.load();
-			
-			//Para deixar o menu do tamanho da Janela da App
+
+			// Para deixar o menu do tamanho da Janela da App
 			scrollPane.setFitToHeight(true);
 			scrollPane.setFitToWidth(true);
-			
+
 			Scene mainScene = new Scene(scrollPane);
 			primaryStage.setScene(mainScene);
 			primaryStage.setTitle("Sample JavaFX application");
