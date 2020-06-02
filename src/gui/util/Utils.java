@@ -27,4 +27,17 @@ public class Utils {
 				 * 
 				 */
 	}
+	
+	
+	//para converter uma string que virá do TextFiel para inteiro
+	public static Integer tryParseToInt(String str) {
+	
+		try{
+			return Integer.parseInt(str); 
+		}
+		catch(NumberFormatException e) {
+			return null;
+		}
+	}
+	
 }

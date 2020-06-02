@@ -17,4 +17,16 @@ public class DepartmentServices {
 		return dao.findAll();
 
 	}
+	
+	
+	public void saveOrUpdate(Department obj) {
+		
+		if(obj.getId()==null) {
+			dao.insert(obj);  //insere novo departamento no banco de dados
+		}
+		
+		else {
+			dao.update(obj); //departamento ja existente, basta apenas atualiza-lo
+		}
+	}
 }
