@@ -62,7 +62,7 @@ public class DepartmentFormController implements Initializable {
 								 */
 		services.saveOrUpdate(entity); //salvo no banco de dados
 		
-		notifyDataChangeListeners();
+		notifyDataChangeListeners();  //notifica a lista que foi efetuado algum evento
 		
 		Utils.currentStage(event).close();
 		/*
