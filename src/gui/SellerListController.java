@@ -1,5 +1,6 @@
 package gui;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
@@ -16,7 +17,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -24,6 +27,8 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.entities.Seller;
 import model.services.SellerServices;
@@ -124,40 +129,40 @@ public class SellerListController implements Initializable, DataChangeListener {
 	private void createDialogForm(Seller obj, String absoluteName, Stage parentStage) {
 		// O argumento recebe o Stage da Janela que abriu a janelinha
 		// O absoluteName recebe o nome da View que vai carregar
-//		try {
-//			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName)); // para carregar uma tela
-//			Pane pane = loader.load();
-//
-//			// Para injetar o vendedor na tela do formulário:
-//
-//			SellerFormController controller = loader.getController(); // pegou o controlador da tela do formulário
-//			controller.setSeller(obj);// injetor o vendedor no controlador
-//			controller.setSellerServices(new SellerServices());
-//			controller.subscribeDataChangeListener(this); // inscrevendo para receber o evento do formulário
-//
-//			controller.updateFormData(); // para carregar os dados do vendedor no formulário
-//
-//			// Para carregar uma nova janelinha de dialogo na frente do Stage, eu preciso
-//			// declarar um novo Stage
-//
-//			Stage dialogStage = new Stage();
-//			dialogStage.setTitle("Enter Seller Data: "); // Para definir um nome para o titulo da tela
-//			dialogStage.setScene(new Scene(pane)); // o painel será a nova cena
-//			dialogStage.setResizable(false); // função que define se a janela pode (true) ou não (false) ser
-//												// redimensionada
-//			dialogStage.initOwner(parentStage); // quem é o pai dessa janela?? = parentStage
-//
-//			dialogStage.initModality(Modality.WINDOW_MODAL);
-//			/*
-//			 * essa janela fica travada, enquanto vc não fechar a janela, vc não consegue
-//			 * aceessar a janela anterior
-//			 * 
-//			 */
-//			dialogStage.showAndWait(); // mostrar e esperar
-//
-//		} catch (IOException e) {
-//			Alerts.showAlert("IO Exception", "Error load View", e.getMessage(), AlertType.ERROR);
-//		}
+		try {
+			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName)); // para carregar uma tela
+			Pane pane = loader.load();
+
+			// Para injetar o vendedor na tela do formulário:
+
+			SellerFormController controller = loader.getController(); // pegou o controlador da tela do formulário
+			controller.setSeller(obj);// injetor o vendedor no controlador
+			controller.setSellerServices(new SellerServices());
+			controller.subscribeDataChangeListener(this); // inscrevendo para receber o evento do formulário
+
+			controller.updateFormData(); // para carregar os dados do vendedor no formulário
+
+			// Para carregar uma nova janelinha de dialogo na frente do Stage, eu preciso
+			// declarar um novo Stage
+
+			Stage dialogStage = new Stage();
+			dialogStage.setTitle("Enter Seller Data: "); // Para definir um nome para o titulo da tela
+			dialogStage.setScene(new Scene(pane)); // o painel será a nova cena
+			dialogStage.setResizable(false); // função que define se a janela pode (true) ou não (false) ser
+												// redimensionada
+			dialogStage.initOwner(parentStage); // quem é o pai dessa janela?? = parentStage
+
+			dialogStage.initModality(Modality.WINDOW_MODAL);
+			/*
+			 * essa janela fica travada, enquanto vc não fechar a janela, vc não consegue
+			 * aceessar a janela anterior
+			 * 
+			 */
+			dialogStage.showAndWait(); // mostrar e esperar
+
+		} catch (IOException e) {
+			Alerts.showAlert("IO Exception", "Error load View", e.getMessage(), AlertType.ERROR);
+		}
 	}
 
 	/*
