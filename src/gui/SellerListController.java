@@ -1,6 +1,7 @@
 package gui;
 
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -41,6 +42,15 @@ public class SellerListController implements Initializable, DataChangeListener {
 	private TableColumn<Seller, String> tableColumnName; // Coluna Name
 
 	@FXML
+	private TableColumn<Seller, String> tableColumnEmail; // Coluna email
+	
+	@FXML
+	private TableColumn<Seller, Date> tableColumnBirthDate; // Coluna dataAniversario
+	
+	@FXML
+	private TableColumn<Seller, Double> tableColumnBaseSalary; // Coluna Salario
+	
+	@FXML
 	private TableColumn<Seller, Seller> tableColumnEDIT; // coluna para editar
 
 	@FXML
@@ -74,7 +84,12 @@ public class SellerListController implements Initializable, DataChangeListener {
 
 		tableColumnId.setCellValueFactory(new PropertyValueFactory<>("id"));
 		tableColumnName.setCellValueFactory(new PropertyValueFactory<>("name"));
-
+		tableColumnEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+		tableColumnBirthDate.setCellValueFactory(new PropertyValueFactory<>("birthDate"));	
+		Utils.formatTableColumnDate(tableColumnBirthDate, "dd/MM/yyyy");//para data aparecer formatada
+		tableColumnBaseSalary.setCellValueFactory(new PropertyValueFactory<>("baseSalary"));		
+		Utils.formatTableColumnDouble(tableColumnBaseSalary, 2); // para formatar o salario
+		
 		// Métodos para fazer a coluna acompanhar a tela da aplicação
 		Stage stage = (Stage) Main.getMainScene().getWindow();
 		tableViewSeller.prefHeightProperty().bind(stage.heightProperty());
