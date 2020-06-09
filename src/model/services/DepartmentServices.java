@@ -29,4 +29,9 @@ public class DepartmentServices {
 			dao.update(obj); //departamento ja existente, basta apenas atualiza-lo
 		}
 	}
+	
+	//para remover o departamento
+	public void remove (Department obj) {
+		dao.deleteById(obj.getId());
+	}
 }

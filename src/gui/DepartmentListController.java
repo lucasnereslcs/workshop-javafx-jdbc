@@ -3,9 +3,11 @@ package gui;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import application.Main;
+import db.DbIntegrityException;
 import gui.listener.DataChangeListener;
 import gui.util.Alerts;
 import gui.util.Utils;
@@ -19,6 +21,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -44,6 +47,9 @@ public class DepartmentListController implements Initializable, DataChangeListen
 
 	@FXML
 	private TableColumn<Department, Department> tableColumnEDIT; // coluna para editar
+
+	@FXML
+	private TableColumn<Department, Department> tableColumnREMOVE; // coluna para remover
 
 	@FXML
 	private Button btNew;
@@ -100,8 +106,8 @@ public class DepartmentListController implements Initializable, DataChangeListen
 		List<Department> list = service.findAll(); // Para carregar a lista de departamentos
 		obsList = FXCollections.observableArrayList(list); // carregando a lista no Observable List;
 		tableViewDepartment.setItems(obsList);// Para carregar os itens na TableView
-		initEditButtons(); //metodo para acrescentar um botão edit em cada linha da tabela
-
+		initEditButtons(); // metodo para acrescentar um botão edit em cada linha da tabela
+		initRemoveButtons(); //método para acrescentar um botão de remover em cada linha da tabela
 	}
 
 	// Quando criamos uma janela de dialogo devemos dizer o stage que criou a janela
@@ -156,7 +162,7 @@ public class DepartmentListController implements Initializable, DataChangeListen
 
 	}
 
-	private void initEditButtons() { //metodo para acrescentar um botão edit em cada linha da tabela
+	private void initEditButtons() { // metodo para acrescentar um botão edit em cada linha da tabela
 		tableColumnEDIT.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
 		tableColumnEDIT.setCellFactory(param -> new TableCell<Department, Department>() {
 			private final Button button = new Button("edit");
@@ -173,5 +179,44 @@ public class DepartmentListController implements Initializable, DataChangeListen
 						event -> createDialogForm(obj, "/gui/DepartmentForm.fxml", Utils.currentStage(event)));
 			}
 		});
+	}
+
+	private void initRemoveButtons() {
+		tableColumnREMOVE.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
+		tableColumnREMOVE.setCellFactory(param -> new TableCell<Department, Department>() {
+			private final Button button = new Button("remove");
+
+			@Override
+			protected void updateItem(Department obj, boolean empty) {
+				super.updateItem(obj, empty);
+				if (obj == null) {
+					setGraphic(null);
+					return;
+				}
+				setGraphic(button);
+				button.setOnAction(event -> removeEntity(obj));
+			}
+		});
+	}
+
+	private void removeEntity(Department obj) {
+		// alerta para confirmar delete
+		Optional<ButtonType> result = Alerts.showConfirmation("Confirtmation", "Are you sure to delete?");
+
+		// A classe Optional retorna um objeto, e para acessar esse objeto é neecssario
+		// usar metodo Get
+
+		if (result.get() == ButtonType.OK) {
+			if (service == null) {
+				throw new IllegalStateException("Service was null");
+			}
+			try {
+				service.remove(obj);
+				updateTableView();
+			} catch (DbIntegrityException e) {
+				Alerts.showAlert("error removing object", null, e.getMessage(), AlertType.ERROR);
+			}
+		}
+
 	}
 }
