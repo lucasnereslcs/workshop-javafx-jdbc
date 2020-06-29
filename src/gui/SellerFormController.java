@@ -1,8 +1,11 @@
 package gui;
 
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -17,6 +20,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable; //Interface de inicialização do controlador.
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import model.entities.Seller;
@@ -37,10 +41,28 @@ public class SellerFormController implements Initializable {
 
 	@FXML
 	private TextField txtName;
+	
+	@FXML
+	private TextField txtEmail;
+	
+	@FXML
+	private DatePicker dpBirthdate; //para data de nascimento
+	
+	@FXML
+	private TextField txtBaseSalary;
 
 	@FXML
 	private Label labelErrorName; // caso tenha alguma mensagem de erro no preenchimento do nome
 
+	@FXML
+	private Label labelErrorEmail;
+	
+	@FXML
+	private Label labelErrorBirthDate;
+	
+	@FXML
+	private Label labelErrorBaseSalary;
+	
 	@FXML
 	private Button btSave;
 
@@ -168,6 +190,26 @@ public class SellerFormController implements Initializable {
 		 * 
 		 */
 		txtName.setText(entity.getName());
+		txtEmail.setText(entity.getEmail());
+		Locale.setDefault(Locale.US);
+		txtBaseSalary.setText(String.format("%.2f", entity.getBaseSalary()));
+		
+		if(entity.getBirthDate() != null) {
+		dpBirthdate.setValue(LocalDate.ofInstant(entity.getBirthDate().toInstant(), ZoneId.systemDefault()) );
+		}
+		/*
+		 * no banco de dados a data esta armazenada corretamente.
+		 * 
+		 * porem é necessario apresentar a data  para o usuario baseado no local aonde ele está
+		 * 
+		 * por isso necessario "LocalDate.ofInstant(instant, zone)"
+		 * 
+		 * necessario pegar o instante == entity.getBirthDate().toInstant()
+		 * 
+		 * zone = fuso horario
+		 * 
+		 * ZoneId.systemDefault() = pega o fuso horario da maquina do usuario
+		 */
 	}
 
 	@Override
@@ -178,8 +220,10 @@ public class SellerFormController implements Initializable {
 
 	private void initializeNodes() {
 		Constraints.setTextFieldInteger(txtId); // para que a variavel txtId aceite apenas numeros inteiros
-		Constraints.setTextFieldMaxLength(txtName, 30);// variavel txtName vai ter no maximo 30 caracteres
-
+		Constraints.setTextFieldMaxLength(txtName, 70);// variavel txtName vai ter no maximo 70 caracteres
+		Constraints.setTextFieldDouble(txtBaseSalary); //variavel aceita apenas Double
+		Constraints.setTextFieldMaxLength(txtEmail, 60); 
+		Utils.formatDatePicker(dpBirthdate, "dd/MM/yyyy");
 	}
 
 	// metodo para pegar os erros que estão na exceção e lançar na tela
