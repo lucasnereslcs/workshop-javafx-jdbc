@@ -15,22 +15,31 @@ import gui.listener.DataChangeListener;
 import gui.util.Alerts;
 import gui.util.Constraints;
 import gui.util.Utils;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable; //Interface de inicialização do controlador.
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.util.Callback;
+import model.entities.Department;
 import model.entities.Seller;
 import model.exceptions.ValidationException;
+import model.services.DepartmentServices;
 import model.services.SellerServices;
 
 public class SellerFormController implements Initializable {
 
 	private Seller entity;
 	private SellerServices services;
+	private DepartmentServices departmentServices; // para conectar com os departamentos do banco de dados
 
 	private List<DataChangeListener> dataChangeListeners = new ArrayList<>();// lista para receber um evento
 
@@ -41,33 +50,38 @@ public class SellerFormController implements Initializable {
 
 	@FXML
 	private TextField txtName;
-	
+
 	@FXML
 	private TextField txtEmail;
-	
+
 	@FXML
-	private DatePicker dpBirthdate; //para data de nascimento
-	
+	private DatePicker dpBirthdate; // para data de nascimento
+
 	@FXML
 	private TextField txtBaseSalary;
+
+	@FXML
+	private ComboBox<Department> comboBoxDepartment;
 
 	@FXML
 	private Label labelErrorName; // caso tenha alguma mensagem de erro no preenchimento do nome
 
 	@FXML
 	private Label labelErrorEmail;
-	
+
 	@FXML
 	private Label labelErrorBirthDate;
-	
+
 	@FXML
 	private Label labelErrorBaseSalary;
-	
+
 	@FXML
 	private Button btSave;
 
 	@FXML
 	private Button btCancel;
+
+	private ObservableList<Department> obsList;
 
 	@FXML
 	public void onBtSaveAction(ActionEvent event) {
@@ -96,13 +110,12 @@ public class SellerFormController implements Initializable {
 			 */
 
 		}
-		
-		//caso o nome esteja errado
-		catch(ValidationException e) {
+
+		// caso o nome esteja errado
+		catch (ValidationException e) {
 			setErrorsMessage(e.getErros());
 		}
-		
-		
+
 		catch (DbException e) {
 			Alerts.showAlert("Erro ao Salvar", null, e.getMessage(), AlertType.ERROR);
 		}
@@ -165,8 +178,9 @@ public class SellerFormController implements Initializable {
 		this.entity = entity;
 	}
 
-	public void setSellerServices(SellerServices services) {
+	public void setServices(SellerServices services, DepartmentServices departmentServices) {
 		this.services = services;
+		this.departmentServices = departmentServices;
 	}
 
 	// metodo para objetos se inscreverem na lista "dataChangeListeners"
@@ -193,14 +207,15 @@ public class SellerFormController implements Initializable {
 		txtEmail.setText(entity.getEmail());
 		Locale.setDefault(Locale.US);
 		txtBaseSalary.setText(String.format("%.2f", entity.getBaseSalary()));
-		
-		if(entity.getBirthDate() != null) {
-		dpBirthdate.setValue(LocalDate.ofInstant(entity.getBirthDate().toInstant(), ZoneId.systemDefault()) );
+
+		if (entity.getBirthDate() != null) {
+			dpBirthdate.setValue(LocalDate.ofInstant(entity.getBirthDate().toInstant(), ZoneId.systemDefault()));
 		}
 		/*
 		 * no banco de dados a data esta armazenada corretamente.
 		 * 
-		 * porem é necessario apresentar a data  para o usuario baseado no local aonde ele está
+		 * porem é necessario apresentar a data para o usuario baseado no local aonde
+		 * ele está
 		 * 
 		 * por isso necessario "LocalDate.ofInstant(instant, zone)"
 		 * 
@@ -210,6 +225,35 @@ public class SellerFormController implements Initializable {
 		 * 
 		 * ZoneId.systemDefault() = pega o fuso horario da maquina do usuario
 		 */
+		if(entity.getDepartment() == null) {
+			comboBoxDepartment.getSelectionModel().selectFirst();
+			//caso o departamento esteja nulo, seleciona o primeiro departamento da lista
+		}
+		
+		comboBoxDepartment.setValue(entity.getDepartment());
+		/*
+		 * para carregar no comboBox o departamento associado ao vendedor
+		 * 
+		 */
+	}
+
+	/*
+	 * este metodo é responsavel por carregar a lista de departamentos do banco de
+	 * dados no observable list
+	 * 
+	 * 1º acessa os departamentos no banco de dados;(Banco de Dados) 2ºjava(list -->
+	 * observableList (Java) 3º passa para o comboBox (JavaFX)
+	 * 
+	 */
+
+	public void loadAssociatedObjects() {
+
+		if (departmentServices == null) {
+			throw new IllegalStateException("DepartmentServices was null");
+		}
+		List<Department> list = departmentServices.findAll();// lista que recebe os departamentos no banco de dados
+		obsList = FXCollections.observableArrayList(list);// jogando os departamentos na observableList
+		comboBoxDepartment.setItems(obsList);// associar a lista com a lista do Combo box
 	}
 
 	@Override
@@ -221,9 +265,10 @@ public class SellerFormController implements Initializable {
 	private void initializeNodes() {
 		Constraints.setTextFieldInteger(txtId); // para que a variavel txtId aceite apenas numeros inteiros
 		Constraints.setTextFieldMaxLength(txtName, 70);// variavel txtName vai ter no maximo 70 caracteres
-		Constraints.setTextFieldDouble(txtBaseSalary); //variavel aceita apenas Double
-		Constraints.setTextFieldMaxLength(txtEmail, 60); 
+		Constraints.setTextFieldDouble(txtBaseSalary); // variavel aceita apenas Double
+		Constraints.setTextFieldMaxLength(txtEmail, 60);
 		Utils.formatDatePicker(dpBirthdate, "dd/MM/yyyy");
+		initializeComboBoxDepartment();
 	}
 
 	// metodo para pegar os erros que estão na exceção e lançar na tela
@@ -237,6 +282,19 @@ public class SellerFormController implements Initializable {
 
 		}
 
+	}
+
+	//codigo para iniciar o combo box
+	private void initializeComboBoxDepartment() {
+		Callback<ListView<Department>, ListCell<Department>> factory = lv -> new ListCell<Department>() {
+			@Override
+			protected void updateItem(Department item, boolean empty) {
+				super.updateItem(item, empty);
+				setText(empty ? "" : item.getName());
+			}
+		};
+		comboBoxDepartment.setCellFactory(factory);
+		comboBoxDepartment.setButtonCell(factory.call(null));
 	}
 
 }
