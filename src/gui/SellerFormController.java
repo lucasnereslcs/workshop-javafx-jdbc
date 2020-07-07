@@ -1,9 +1,11 @@
 package gui;
 
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -139,7 +141,8 @@ public class SellerFormController implements Initializable {
 
 		ValidationException exception = new ValidationException("Validation error");
 
-		obj.setId(Utils.tryParseToInt(txtId.getText()));
+		obj.setId(Utils.tryParseToInt(txtId.getText())); // metodo que tenta converter a string para inteiro, ou retorna
+															// null
 		/*
 		 * txtId.getText -> pega o texto do TextField Utils.tryParseToInt -> responsavel
 		 * por converter esse texto para inteiro obj.setId -> insere o id no
@@ -157,11 +160,49 @@ public class SellerFormController implements Initializable {
 
 		obj.setName(txtName.getText());
 
+		if (txtEmail.getText() == null || txtEmail.getText().trim().equals("")) {
+			exception.addErrors("email", "Field can't be empty");
+		}
+
+		obj.setEmail(txtEmail.getText());
+
+		// DATA
+
+		if (dpBirthdate.getValue() == null) {
+			exception.addErrors("birthDate", "Field can't be empty");
+		}
+
+		else {
+			Instant instant = Instant.from(dpBirthdate.getValue().atStartOfDay(ZoneId.systemDefault()));
+			/*
+			 * atStartOfDay(ZoneId.systemDefault()) --> Pega a data no computador do usuário
+			 * 
+			 * Instant --> adapta a data a localidade da aplicação
+			 * 
+			 */
+
+			// o obj espera uma data do tipo "Date"
+
+			obj.setBirthDate(Date.from(instant)); // convertendo um Instant para um Date
+
+		}
+		// SALARIO
+
+		if (txtBaseSalary.getText() == null || txtBaseSalary.getText().trim().equals("")) {
+			exception.addErrors("baseSalary", "Field can't be empty");
+		}
+		// convertendo a string para double
+		obj.setBaseSalary(Utils.tryParseToDouble(txtBaseSalary.getText()));
+
 		// testando se há algum erro na lista de erros
 		if (exception.getErros().size() > 0) {
 			throw exception;
 		}
 
+		//DEPARTAMENTO
+		
+		obj.setDepartment(comboBoxDepartment.getValue());
+		
 		return obj;
 	}
 
@@ -225,11 +266,11 @@ public class SellerFormController implements Initializable {
 		 * 
 		 * ZoneId.systemDefault() = pega o fuso horario da maquina do usuario
 		 */
-		if(entity.getDepartment() == null) {
+		if (entity.getDepartment() == null) {
 			comboBoxDepartment.getSelectionModel().selectFirst();
-			//caso o departamento esteja nulo, seleciona o primeiro departamento da lista
+			// caso o departamento esteja nulo, seleciona o primeiro departamento da lista
 		}
-		
+
 		comboBoxDepartment.setValue(entity.getDepartment());
 		/*
 		 * para carregar no comboBox o departamento associado ao vendedor
@@ -277,14 +318,19 @@ public class SellerFormController implements Initializable {
 
 		Set<String> fields = errors.keySet();
 
-		if (fields.contains("name")) {
-			labelErrorName.setText(errors.get("name"));// pegando a mensagem e passando pro "labelErrorName"
 
-		}
+		//operador ternário
+		labelErrorName.setText(fields.contains("name") ? errors.get("name") : ("")); 
+		// pegando a mensagem e passando pro "labelErrorName". se não tiver erro apaece nada
+		labelErrorEmail.setText(fields.contains("email") ? errors.get("email") : (""));
+		labelErrorBirthDate.setText(fields.contains("birthDate") ? errors.get("birthDate") : (""));
+		labelErrorBaseSalary.setText(fields.contains("baseSalary") ? errors.get("baseSalary") : (""));
+		
+		
 
 	}
 
-	//codigo para iniciar o combo box
+	// codigo para iniciar o combo box
 	private void initializeComboBoxDepartment() {
 		Callback<ListView<Department>, ListCell<Department>> factory = lv -> new ListCell<Department>() {
 			@Override

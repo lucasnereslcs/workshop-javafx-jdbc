@@ -47,6 +47,18 @@ public class Utils {
 			return null;
 		}
 	}
+	
+	
+	
+	// para converter uma string que virá do TextFiel para double
+		public static Double tryParseToDouble(String str) {
+
+			try {
+				return Double.parseDouble(str);
+			} catch (NumberFormatException e) {
+				return null;
+			}
+		}
 
 	// para formatar a data
 	public static <T> void formatTableColumnDate(TableColumn<T, Date> tableColumn, String format) {
